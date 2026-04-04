@@ -1,0 +1,8 @@
+monitoring/prometheus/data
+monitoring/grafana/data
+
+# Ignore everything in the model-registry folder
+model-registry/*
+
+# Exception: do NOT ignore this specific file
+!model-registry/prometheus.conf

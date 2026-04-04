@@ -1,0 +1,11 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'model-server'
+    static_configs:
+      - targets: ['model-server:8501'] # TF Serving exposes metrics on its REST port by default
+
+  - job_name: 'frontend'
+    static_configs:
+      - targets: ['frontend:5000'] # Assuming you expose a /metrics endpoint in Flask via prometheus_client

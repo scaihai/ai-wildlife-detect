@@ -1,0 +1,77 @@
+services:
+  
+  # 1. Web App Frontend (Flask)
+  frontend:
+    build: ./frontend
+    image: frontend
+    ports:
+      - "5000:5000"
+    depends_on:
+      - model-server
+    networks:
+      - mlops-net
+
+  # 2. Model Server (TensorFlow Serving)
+  model-server:
+    image: tensorflow/serving:latest
+    ports:
+      - "8500:8500" # gRPC port
+      - "8501:8501" # REST port
+    environment:
+      - MODEL_NAME=my_frcnn
+      - MODEL_BASE_PATH=/model-registry
+    volumes:
+      # Maps the shared model registry volume to TF Serving
+      - ./model-registry:/model-registry
+    command:
+      # Endpoint: /monitoring/prometheus/metrics
+      - "--monitoring_config_file=/model-registry/prometheus.conf"
+    networks:
+      - mlops-net
+
+  # ---------------------------------------------------------
+  # MLOPS & CONTINUOUS DELIVERY
+  # ---------------------------------------------------------
+
+  # # 3. Training Pipeline
+  # training-pipeline:
+  #   build: 
+  #     context: ./training
+  #   volumes:
+  #     # Maps the shared model registry to save the .pb files
+  #     - model_registry:/models/object_detection
+  #   networks:
+  #     - mlops-net
+
+  # ---------------------------------------------------------
+  # MONITORING & OBSERVABILITY
+  # ---------------------------------------------------------
+
+  # 4. Prometheus (Metrics Collection)
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./monitoring/prometheus/data:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - mlops-net
+
+  # 5. Grafana (Dashboard)
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    depends_on:
+      - prometheus
+    volumes:
+      - ./monitoring/grafana/data:/var/lib/grafana
+    networks:
+      - mlops-net
+
+networks:
+  mlops-net:
+    driver: bridge
