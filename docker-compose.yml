@@ -26,7 +26,7 @@ services:
       # Maps the shared model registry volume to TF Serving
       - ./model-registry:/model-registry
     command:
-      # Endpoint: /monitoring/prometheus/metrics
+      # Start TF Serving with the monitoring config file
       - "--monitoring_config_file=/model-registry/prometheus.conf"
     networks:
       - mlops-net
@@ -42,7 +42,7 @@ services:
     environment:
       - ADMIN_PASSWORD=2E=v[W,kj_}NP.Z2
     volumes:
-      # Maps your local folder to /model-registry inside the container
+      # Maps the local folder to /model-registry inside the container
       - ./model-registry:/model-registry
     networks:
       - mlops-net

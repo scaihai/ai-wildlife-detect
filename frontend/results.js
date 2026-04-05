@@ -1,14 +1,29 @@
+/**
+ * ResultsApp Class
+ * Handles the retrieval and visualization of inference results. It extracts model 
+ * data and detection coordinates from session storage to render bounding boxes 
+ * and detailed result tables.
+ */
 class ResultsApp {
     constructor() {
         this.init();
     }
 
+    /**
+     * Bootstraps the results page by initializing icons, fetching model metadata, 
+     * and triggering the data rendering process.
+     */
     init() {
         lucide.createIcons();
         this.fetchModelInfo();
         this.renderData();
     }
 
+    /**
+     * Asynchronously fetches model information (name, version, and monitoring links) 
+     * from the backend to update the UI's external dashboard references.
+     * @async
+     */
     async fetchModelInfo() {
         try {
             const response = await fetch('info');
@@ -29,6 +44,17 @@ class ResultsApp {
         }
     }
 
+    /**
+     * Orchestrates the visualization of the classification results. It performs 
+     * the following operations:
+     * 1. Retrieves raw results, image data, and filenames from sessionStorage.
+     * 2. Toggles UI visibility based on data availability.
+     * 3. Renders the original and classified images.
+     * 4. Calculates and injects an absolute-positioned CSS bounding box for the 
+     * highest-confidence detection.
+     * 5. Populates the results table with labels and probability percentages for 
+     * all detected objects.
+     */
     renderData() {
         const rawResults = sessionStorage.getItem('wildlifeDetectResults');
         const imageData = sessionStorage.getItem('wildlifeDetectImage');

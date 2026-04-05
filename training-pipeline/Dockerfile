@@ -1,4 +1,4 @@
-# Use TensorFlow base image (switch to tensorflow:2.13.0-gpu if using NVIDIA GPUs)
+# Use TensorFlow base image
 FROM tensorflow/tensorflow:2.13.0
 
 # Install system dependencies required for TF Object Detection API
@@ -18,12 +18,12 @@ RUN cp object_detection/packages/tf2/setup.py .
 RUN python -m pip install --upgrade pip
 RUN python -m pip install .
 
-# Set up our application
+# Set up the application
 WORKDIR /app
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
-# Copy our app files
+# Copy the app files
 COPY app.py .
 COPY train.py .
 

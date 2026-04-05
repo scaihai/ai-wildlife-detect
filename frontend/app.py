@@ -1,3 +1,14 @@
+"""
+Flask web application serving as an API gateway and frontend.
+
+This service acts as an intermediary, handling:
+1. Routing for the static user interface pages.
+2. Proxying inference requests to a TensorFlow Serving container, including 
+   image preprocessing (base64 to tensor) and prediction post-processing.
+3. Exposing Prometheus metrics (latency, request counts, model confidence).
+4. Forwarding authenticated requests to trigger a remote model-training pipeline.
+"""
+
 import os
 import base64
 import io
@@ -44,7 +55,7 @@ prediction_latency = Histogram(
     buckets=[0.1, 0.25, 0.5, 1.0, 2.5, 5.0, 10.0]
 )
 
-# Label map based on label_map.pbtxt
+# Label map
 LABEL_MAP = {
     1: 'Lion',
     2: 'Ostrich',
@@ -53,6 +64,15 @@ LABEL_MAP = {
 
 @app.route('/info', methods=['GET'])
 def info():
+    """
+    Retrieves the current model metadata and Grafana dashboard link.
+
+    Queries the TensorFlow Serving status endpoint to fetch the active model 
+    version.
+
+    Returns:
+        Response: JSON payload containing `model_name`, `version`, and `grafana_url`.
+    """
     version = "?"
     try:
         response = requests.get(TF_SERVING_STATUS_URL, timeout=2)
@@ -72,26 +92,51 @@ def info():
 
 @app.route('/')
 def index():
+    """Serves the main application interface."""
     return send_from_directory('.', 'index.html')
 
 @app.route('/results')
 def results():
+    """Serves the inference results view."""
     return send_from_directory('.', 'results.html')
 
 @app.route('/metrics-dashboard')
 def metrics_dashboard():
+    """Serves the embedded metrics dashboard view."""
     return send_from_directory('.', 'metrics.html')
 
 @app.route('/description')
 def description():
+    """Serves the project description page."""
     return send_from_directory('.', 'description.html')
 
 @app.route('/architecture')
 def architecture():
+    """Serves the system architecture diagram page."""
     return send_from_directory('.', 'architecture.html')
 
 @app.route('/predict', methods=['POST'])
 def predict():
+    """
+    Processes an uploaded image and proxies the inference to TensorFlow Serving.
+
+    Expects a JSON payload with a 'base64Data' string. Decodes the image, 
+    converts it to a uint8 numpy array [1, height, width, 3], and posts it to 
+    the TF Serving REST API. 
+
+    Post-processing includes:
+    - Filtering out predictions below CONFIDENCE_THRESHOLD.
+    - Scaling bounding box coordinates by 1000 for frontend rendering.
+    - Sorting results so the highest confidence detection is first.
+
+    Side Effects:
+        Updates Prometheus metrics (latency histogram, request counter, and 
+        confidence gauge/summary based on the highest-scoring detection).
+
+    Returns:
+        Response: JSON array of dictionaries, each containing 'label', 'box_2d', 
+        and 'score'. Returns HTTP 400 for missing data or 500 for inference errors.
+    """
     start_time = time.time()
     try:
         data = request.get_json()
@@ -163,10 +208,28 @@ def predict():
 
 @app.route('/metrics')
 def metrics():
+    """
+    Exposes application metrics for Prometheus scraping.
+
+    Returns:
+        Response: Raw metrics data formatted to the Prometheus text-based standard.
+    """
     return Response(generate_latest(), mimetype=CONTENT_TYPE_LATEST)
 
 @app.route('/trigger-build', methods=['POST'])
 def trigger_build():
+    """
+    Authenticates and forwards a build trigger to the remote training pipeline.
+
+    Expects a JSON payload containing a 'password'. Acts as a reverse proxy by 
+    forwarding the payload to the internal TRAINING_PIPELINE_URL. Evaluates 
+    upstream status codes to determine client-facing responses.
+
+    Returns:
+        Response: JSON success message (HTTP 200) if the pipeline accepts the request, 
+        or a JSON error message with the corresponding HTTP status code (401 Unauthorized, 
+        502 Bad Gateway, or 503 Service Unavailable) on failure.
+    """
     try:
         data = request.get_json()
         if not data or 'password' not in data:

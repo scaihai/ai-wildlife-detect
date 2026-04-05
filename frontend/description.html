@@ -106,7 +106,6 @@
         lucide.createIcons();
         fetch('info').then(res => res.json()).then(data => {
             const pbText = document.getElementById('powered-by-text');
-            // if (pbText) pbText.textContent = `Powered by ${data.model_name} (v${data.version})`;
             if (data.grafana_url) {
                 const monitoringLinks = document.querySelectorAll('.monitoring-link');
                 monitoringLinks.forEach(link => {

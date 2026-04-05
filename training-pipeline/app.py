@@ -10,12 +10,28 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 
 # The password that the frontend must send
-ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'admin')
+ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', '2E=v[W,kj_}NP.Z2')
 
 # Track the build thread to prevent concurrent training runs
 build_thread = None
 
 def run_training():
+    """
+    Executes the machine learning training pipeline as a subprocess.
+    
+    This function wraps the execution of `train.py`. It captures the 
+    standard output and error states, logging the success or failure 
+    of the model training process. 
+    
+    Note:
+        This is intended to be run within a background thread to prevent 
+        blocking the main Flask application.
+    
+    Raises:
+        subprocess.CalledProcessError: If the training script returns a non-zero exit code.
+        Exception: For any unexpected errors during script execution.
+    """
+
     logger.info("Initiating training sequence...")
     try:
         # Executes the train.py script
@@ -28,6 +44,26 @@ def run_training():
 
 @app.route('/build', methods=['POST'])
 def trigger_build():
+    """
+    API endpoint to remotely initiate the model training sequence.
+    
+    Performs three layers of validation:
+    1. Authentication: Checks the provided password against `ADMIN_PASSWORD`.
+    2. Concurrency Control: Ensures only one training thread is active at a time 
+       by checking the `build_thread` status.
+    3. Asynchronous Execution: Spawns the training process in a separate 
+       thread to allow for an immediate HTTP 202 response.
+    
+    Payload:
+        JSON: {"password": "admin_password"}
+        
+    Returns:
+        tuple: (JSON response, HTTP status code)
+            - 202: Build successfully initiated.
+            - 401: Unauthorized/Invalid password.
+            - 429: Conflict/Build already in progress.
+    """
+    
     global build_thread
     data = request.get_json()
     

@@ -1,8 +1,19 @@
+/**
+ * MetricsApp Class
+ * * Orchestrates the real-time monitoring dashboard. It handles fetching and parsing 
+ * Prometheus-formatted metrics, updating system health status, and managing 
+ * the administrative model-rebuild trigger.
+ */
 class MetricsApp {
     constructor() {
         this.init();
     }
 
+    /**
+     * Bootstraps the dashboard by initializing icons, fetching initial model data, 
+     * binding event listeners to the refresh and build buttons, and setting up 
+     * the 10-second automatic refresh interval.
+     */
     init() {
         lucide.createIcons();
         this.fetchModelInfo();
@@ -29,6 +40,12 @@ class MetricsApp {
         setInterval(() => this.fetchMetrics(), 10000);
     }
 
+    /**
+     * Fetches high-level model metadata (name, version, and monitoring URLs) from 
+     * the backend. Updates the "Model Server Status" badge and the "Model Version" 
+     * card based on the response success or failure.
+     * @async
+     */
     async fetchModelInfo() {
         try {
             const response = await fetch('info');
@@ -76,6 +93,16 @@ class MetricsApp {
         }
     }
 
+    /**
+     * Scrapes the '/metrics' endpoint and parses the raw Prometheus text format. 
+     * Extracts and calculates values for:
+     * - Current confidence (Gauge)
+     * - Average confidence (Summary sum/count)
+     * - Throughput/Error rates (Counter)
+     * - Average Latency (Histogram sum/count)
+     * Updates the corresponding DOM elements with formatted values.
+     * @async
+     */
     async fetchMetrics() {
         try {
             const response = await fetch('metrics');
@@ -179,6 +206,12 @@ class MetricsApp {
         }
     }
 
+    /**
+     * Handles the administrative request to trigger a model retraining build. 
+     * Manages the UI state for the trigger button (loading spinners/disabling) 
+     * and sends the password to the backend for pipeline authorization.
+     * @async
+     */
     async triggerBuild() {
         const passwordInput = document.getElementById('admin-password');
         const btn = document.getElementById('trigger-build-btn');
@@ -199,7 +232,7 @@ class MetricsApp {
 
             this.showBuildStatus('Contacting server...', 'info');
 
-            // API call to your Flask backend
+            // API call to the Flask backend
             const response = await fetch('trigger-build', {
                 method: 'POST',
                 headers: {
@@ -231,7 +264,12 @@ class MetricsApp {
         }
     }
 
-    // Helper method to display the status messages below the button
+    /**
+     * Utility method to display feedback messages regarding the build trigger status.
+     * Adjusts the text color based on the severity (success, error, or info).
+     * @param {string} message - The text to display to the user.
+     * @param {string} type - The status type ('success', 'error', or 'info') to determine styling.
+     */
     showBuildStatus(message, type) {
         const statusMsg = document.getElementById('build-status-msg');
         if (statusMsg) {
