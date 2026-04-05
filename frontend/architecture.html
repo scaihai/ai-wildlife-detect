@@ -60,10 +60,13 @@
         </main>
     </div>
     <script>
+        // Renders all <i data-lucide="X"> tags into vector graphics
         lucide.createIcons();
+        // Fetch application metadata from the backend API
         fetch('info').then(res => res.json()).then(data => {
             const pbText = document.getElementById('powered-by-text');
-            // if (pbText) pbText.textContent = `Powered by ${data.model_name} (v${data.version})`;
+            
+            // Injects the Grafana dashboard URL (fetched from backend env vars) into the monitoring tab
             if (data.grafana_url) {
                 const monitoringLinks = document.querySelectorAll('.monitoring-link');
                 monitoringLinks.forEach(link => {

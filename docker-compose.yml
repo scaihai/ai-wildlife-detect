@@ -6,6 +6,8 @@ services:
     image: frontend
     ports:
       - "5000:5000"
+    environment:
+      - GRAFANA_URL=https://seminationalized-emboly-cary.ngrok-free.dev/d/ads2txc/tf-serving-metrics?orgId=1&from=now-5m&to=now&timezone=browser
     depends_on:
       - model-server
     networks:
@@ -24,7 +26,7 @@ services:
       # Maps the shared model registry volume to TF Serving
       - ./model-registry:/model-registry
     command:
-      # Endpoint: /monitoring/prometheus/metrics
+      # Start TF Serving with the monitoring config file
       - "--monitoring_config_file=/model-registry/prometheus.conf"
     networks:
       - mlops-net
@@ -33,15 +35,17 @@ services:
   # MLOPS & CONTINUOUS DELIVERY
   # ---------------------------------------------------------
 
-  # # 3. Training Pipeline
-  # training-pipeline:
-  #   build: 
-  #     context: ./training
-  #   volumes:
-  #     # Maps the shared model registry to save the .pb files
-  #     - model_registry:/models/object_detection
-  #   networks:
-  #     - mlops-net
+# 3. Training Pipeline
+  training-pipeline:
+    build: ./training-pipeline
+    image: training-pipeline
+    environment:
+      - ADMIN_PASSWORD=2E=v[W,kj_}NP.Z2
+    volumes:
+      # Maps the local folder to /model-registry inside the container
+      - ./model-registry:/model-registry
+    networks:
+      - mlops-net
 
   # ---------------------------------------------------------
   # MONITORING & OBSERVABILITY
@@ -65,6 +69,10 @@ services:
       - "3000:3000"
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
+      # --- Viewer Access Setup ---
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
+      - GF_AUTH_ANONYMOUS_ORG_NAME=Main Org.
     depends_on:
       - prometheus
     volumes:
@@ -74,4 +82,4 @@ services:
 
 networks:
   mlops-net:
-    driver: bridge
+    external: true

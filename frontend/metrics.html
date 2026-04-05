@@ -11,7 +11,6 @@
     <link rel="stylesheet" href="styles.css">
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        /* Document internal styles specific to Metrics/MLOps Dashboard */
         .metrics-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -186,6 +185,17 @@
                     </p>
                 </div>
 
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <span class="metric-title">Avg Prediction Confidence</span>
+                        <i data-lucide="activity" class="text-neutral-400 icon-sm"></i>
+                    </div>
+                    <div id="avg-confidence-value" class="metric-value">--%</div>
+                    <p class="metric-desc">
+                        Summary: prediction_confidence_summary. Running average of successful prediction confidences.
+                    </p>
+                </div>
+
                 <!-- Total Inference Count -->
                 <div class="metric-card">
                     <div class="metric-header">
@@ -223,17 +233,25 @@
                 </div>
             </div>
 
-
-
-            <div
-                style="margin-top: 32px; padding: 24px; background-color: var(--blue-50); border: 1px solid var(--blue-100); border-radius: 12px;">
-                <h3 class="text-lg mb-2" style="color: var(--blue-700)">Grafana Access</h3>
-                <p class="text-neutral-500" style="color: var(--blue-700)">
-                    For a comprehensive historic timeline, <a class="monitoring-link" target="_blank"
-                        style="color: var(--blue-600); font-weight: 600;">open Grafana dashboard</a>.
-                    <br>
-                    Default credentials: username <strong>admin</strong>, password <strong>admin</strong>.
+            <div style="margin-top: 32px; padding: 24px; background-color: var(--bg-white); border: 1px solid var(--border-color); border-radius: 12px; box-shadow: var(--shadow-sm);">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                    <i data-lucide="cpu" class="icon-sm" style="color: var(--text-muted)"></i>
+                    <h3 class="text-lg" style="color: var(--text-main)">Training Pipeline</h3>
+                </div>
+                
+                <p class="text-neutral-500" style="margin-bottom: 20px;">
+                    If the <strong>Avg Prediction Confidence</strong> drops below your acceptable threshold (e.g., < 75%), consider triggering a model rebuild.
                 </p>
+
+                <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                    <input type="password" id="admin-password" placeholder="Admin Password" 
+                        style="padding: 10px 16px; border-radius: 8px; border: 1px solid var(--border-color); outline: none; flex: 1; max-width: 300px;">
+                    
+                    <button id="trigger-build-btn" class="btn btn-primary" style="background-color: var(--text-main); color: white;">
+                        <i data-lucide="play" class="icon-sm"></i> Trigger Build
+                    </button>
+                </div>
+                <div id="build-status-msg" style="margin-top: 12px; font-size: 0.875rem; font-weight: 500; display: none;"></div>
             </div>
 
         </main>

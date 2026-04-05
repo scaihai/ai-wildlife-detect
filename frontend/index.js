@@ -1,4 +1,7 @@
 class UploadApp {
+    /**
+     * Initializes the UploadApp state and triggers the application setup sequence.
+     */
     constructor() {
         this.state = {
             imageSrc: null,
@@ -9,6 +12,11 @@ class UploadApp {
         this.init();
     }
 
+    /**
+     * Bootstraps the application by rendering icons, binding DOM elements, 
+     * attaching event listeners, fetching backend metadata, and clearing 
+     * stale inference data from previous sessions.
+     */
     init() {
         lucide.createIcons();
         this.bindElements();
@@ -22,6 +30,11 @@ class UploadApp {
         sessionStorage.removeItem('wildlifeDetectFilename');
     }
 
+    /**
+     * Asynchronously fetches model metadata and the Grafana dashboard URL 
+     * from the backend '/info' endpoint to populate UI links and text.
+     * @async
+     */
     async fetchModelInfo() {
         try {
             const response = await fetch('info');
@@ -42,6 +55,10 @@ class UploadApp {
         }
     }
 
+    /**
+     * Caches references to required DOM elements into class properties 
+     * to prevent repeated DOM queries during state changes.
+     */
     bindElements() {
         this.dropZone = document.getElementById('drop-zone');
         this.browseBtn = document.getElementById('browse-btn');
@@ -57,6 +74,10 @@ class UploadApp {
         this.errorText = document.getElementById('error-text');
     }
 
+    /**
+     * Registers all necessary DOM event listeners, including drag-and-drop 
+     * interactions for the drop zone, file input changes, and button clicks.
+     */
     addEventListeners() {
         this.dropZone.addEventListener('dragover', (e) => {
             e.preventDefault();
@@ -93,6 +114,12 @@ class UploadApp {
         this.analyzeBtn.addEventListener('click', () => this.analyzeImage());
     }
 
+    /**
+     * Validates an uploaded file's type and extension (must be jpg, jpeg, or png) 
+     * and reads it asynchronously as a base64 Data URL using FileReader.
+     * Updates the application state with the resulting image source or an error.
+     * @param {File} file - The image file object dropped or selected by the user.
+     */
     processFile(file) {
         // Strict Validation
         const validExtensions = ['jpg', 'jpeg', 'png'];
@@ -116,6 +143,12 @@ class UploadApp {
         reader.readAsDataURL(file);
     }
 
+    /**
+     * Asynchronously sends the base64-encoded image to the backend '/predict' 
+     * endpoint for inference. On a successful response, caches the results and 
+     * image data in sessionStorage and redirects the user to the results page.
+     * @async
+     */
     async analyzeImage() {
         if (!this.state.imageSrc) return;
 
@@ -157,11 +190,21 @@ class UploadApp {
         }
     }
 
+    /**
+     * Updates the application state with new values and immediately triggers 
+     * a UI re-render.
+     * @param {Object} newState - An object containing the state properties to update.
+     */
     setState(newState) {
         this.state = { ...this.state, ...newState };
         this.render();
     }
 
+    /**
+     * Updates the DOM visually to reflect the current application state. 
+     * Toggles the visibility of the drop zone, image viewer, error messages, 
+     * button states, and loading spinners based on the data in `this.state`.
+     */
     render() {
         if (this.state.error) {
             this.errorMsg.classList.remove('hidden');

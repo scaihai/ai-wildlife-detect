@@ -1,14 +1,29 @@
+/**
+ * ResultsApp Class
+ * Handles the retrieval and visualization of inference results. It extracts model 
+ * data and detection coordinates from session storage to render bounding boxes 
+ * and detailed result tables.
+ */
 class ResultsApp {
     constructor() {
         this.init();
     }
 
+    /**
+     * Bootstraps the results page by initializing icons, fetching model metadata, 
+     * and triggering the data rendering process.
+     */
     init() {
         lucide.createIcons();
         this.fetchModelInfo();
         this.renderData();
     }
 
+    /**
+     * Asynchronously fetches model information (name, version, and monitoring links) 
+     * from the backend to update the UI's external dashboard references.
+     * @async
+     */
     async fetchModelInfo() {
         try {
             const response = await fetch('info');
@@ -29,6 +44,17 @@ class ResultsApp {
         }
     }
 
+    /**
+     * Orchestrates the visualization of the classification results. It performs 
+     * the following operations:
+     * 1. Retrieves raw results, image data, and filenames from sessionStorage.
+     * 2. Toggles UI visibility based on data availability.
+     * 3. Renders the original and classified images.
+     * 4. Calculates and injects an absolute-positioned CSS bounding box for the 
+     * highest-confidence detection.
+     * 5. Populates the results table with labels and probability percentages for 
+     * all detected objects.
+     */
     renderData() {
         const rawResults = sessionStorage.getItem('wildlifeDetectResults');
         const imageData = sessionStorage.getItem('wildlifeDetectImage');
@@ -53,15 +79,14 @@ class ResultsApp {
         const classifiedImg = document.getElementById('classified-image');
         classifiedImg.src = imageData;
 
-        // Render Bounding Boxes
+        // Render Bounding Boxes (Only the highest confidence)
         const container = document.getElementById('classified-container');
         const colors = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6'];
 
-        // Wait for image to load to ensure bounding boxes map properly if CSS applies max-width
-        // Actually, CSS uses % for bounding boxes so it maps naturally.
-        results.forEach((res, i) => {
-            const color = colors[i % colors.length];
-            const [ymin, xmin, ymax, xmax] = res.box_2d;
+        if (results.length > 0) {
+            const bestRes = results[0]; // Highest confidence is sorted to the top
+            const color = colors[0];
+            const [ymin, xmin, ymax, xmax] = bestRes.box_2d;
 
             const top = `${ymin / 10}%`;
             const left = `${xmin / 10}%`;
@@ -70,7 +95,6 @@ class ResultsApp {
 
             const box = document.createElement('div');
             box.className = 'bounding-box';
-            // Inject inline styles required for bounding box
             box.style.position = 'absolute';
             box.style.border = `2px solid ${color}`;
             box.style.backgroundColor = `${color}20`;
@@ -94,11 +118,11 @@ class ResultsApp {
                     text-transform: capitalize;
                     white-space: nowrap;
                 ">
-                    ${res.label} ${(res.score * 100).toFixed(1)}%
+                    ${bestRes.label} ${(bestRes.score * 100).toFixed(1)}%
                 </div>
             `;
             container.appendChild(box);
-        });
+        }
 
         // Render Table
         const tbody = document.getElementById('table-body');
