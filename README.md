@@ -1,6 +1,6 @@
 # WildlifeDetect
 
-**Live App**: https://struthious-porously-thomasina.ngrok-free.dev/od-frontend/
+**Live Project**: https://struthious-porously-thomasina.ngrok-free.dev/od-frontend/
 
 A production-ready machine learning system for wildlife detection using Faster R-CNN. Detect lions, ostriches, and oryxes in images with a modern web interface, integrated monitoring, and containerized deployment.
 
