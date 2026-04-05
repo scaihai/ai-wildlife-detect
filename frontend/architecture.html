@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WildlifeDetect - Architecture</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-icon">
+                    <i data-lucide="paw-print"></i>
+                </div>
+                <h1>WildlifeDetect</h1>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a class="nav-btn" href="./">
+                    <i data-lucide="layout-dashboard"></i> Inference
+                </a>
+                <a class="nav-btn" href="metrics-dashboard">
+                    <i data-lucide="bar-chart-2"></i> Metrics
+                </a>
+                <a class="nav-btn monitoring-link" target="_blank" rel="noopener noreferrer">
+                    <i data-lucide="activity"></i> Monitoring
+                </a>
+                <a class="nav-btn" href="description">
+                    <i data-lucide="info"></i> Description
+                </a>
+                <a class="nav-btn active" href="architecture">
+                    <i data-lucide="network"></i> Architecture
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="powered-by" id="powered-by-text">
+                    Developed By: <br />
+                    Destiny Gogo-fyneface
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="card p-8">
+                <h2 class="text-2xl mb-6">System Architecture</h2>
+                <div class="arch-box">
+                    <img src="architecture.jpg" alt="System Architecture Diagram" class="arch-img" />
+                </div>
+            </div>
+        </main>
+    </div>
+    <script>
+        lucide.createIcons();
+        fetch('info').then(res => res.json()).then(data => {
+            const pbText = document.getElementById('powered-by-text');
+            // if (pbText) pbText.textContent = `Powered by ${data.model_name} (v${data.version})`;
+            if (data.grafana_url) {
+                const monitoringLinks = document.querySelectorAll('.monitoring-link');
+                monitoringLinks.forEach(link => {
+                    link.href = data.grafana_url;
+                });
+            }
+        }).catch(err => console.error(err));
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,4 @@
+monitoring/prometheus/data
+monitoring/grafana/data
+model-registry/*
+!model-registry/prometheus.conf
