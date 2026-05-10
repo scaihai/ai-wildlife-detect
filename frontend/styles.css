@@ -526,3 +526,50 @@ body {
 .text-blue-600 { color: var(--blue-600); }
 .text-neutral-400 { color: var(--text-light); }
 .text-neutral-500 { color: var(--text-muted); }
+
+/* Responsive Media Queries */
+@media (max-width: 768px) {
+    .app-container {
+        flex-direction: column;
+    }
+    
+    .sidebar {
+        width: 100%;
+        height: auto;
+        position: static;
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .sidebar-header {
+        padding: 16px;
+    }
+    
+    .sidebar-nav {
+        flex-direction: row;
+        overflow-x: auto;
+        padding: 8px 16px;
+        gap: 8px;
+    }
+    
+    .nav-btn {
+        width: auto;
+        white-space: nowrap;
+        padding: 8px 12px;
+    }
+    
+    .sidebar-footer {
+        display: none;
+    }
+
+    .main-content {
+        padding: 16px;
+        height: auto;
+        overflow-y: visible;
+    }
+    
+    .drop-zone {
+        min-height: 300px;
+        padding: 32px 16px;
+    }
+}

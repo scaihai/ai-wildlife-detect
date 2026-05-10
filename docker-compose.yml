@@ -1,13 +1,13 @@
 services:
   
   # 1. Web App Frontend (Flask)
-  frontend:
+  wildlife-detect-frontend:
     build: ./frontend
     image: frontend
     ports:
       - "5000:5000"
     environment:
-      - GRAFANA_URL=https://seminationalized-emboly-cary.ngrok-free.dev/d/ads2txc/tf-serving-metrics?orgId=1&from=now-5m&to=now&timezone=browser
+      - GRAFANA_URL=https://grafana.enkwadore.com/d/ads2txc/tf-serving-metrics?orgId=1&from=now-6h&to=now&timezone=browser
     depends_on:
       - model-server
     networks:
@@ -31,10 +31,6 @@ services:
     networks:
       - mlops-net
 
-  # ---------------------------------------------------------
-  # MLOPS & CONTINUOUS DELIVERY
-  # ---------------------------------------------------------
-
 # 3. Training Pipeline
   training-pipeline:
     build: ./training-pipeline
@@ -44,39 +40,6 @@ services:
     volumes:
       # Maps the local folder to /model-registry inside the container
       - ./model-registry:/model-registry
-    networks:
-      - mlops-net
-
-  # ---------------------------------------------------------
-  # MONITORING & OBSERVABILITY
-  # ---------------------------------------------------------
-
-  # 4. Prometheus (Metrics Collection)
-  prometheus:
-    image: prom/prometheus:latest
-    volumes:
-      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
-      - ./monitoring/prometheus/data:/prometheus
-    ports:
-      - "9090:9090"
-    networks:
-      - mlops-net
-
-  # 5. Grafana (Dashboard)
-  grafana:
-    image: grafana/grafana:latest
-    ports:
-      - "3000:3000"
-    environment:
-      - GF_SECURITY_ADMIN_PASSWORD=admin
-      # --- Viewer Access Setup ---
-      - GF_AUTH_ANONYMOUS_ENABLED=true
-      - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
-      - GF_AUTH_ANONYMOUS_ORG_NAME=Main Org.
-    depends_on:
-      - prometheus
-    volumes:
-      - ./monitoring/grafana/data:/var/lib/grafana
     networks:
       - mlops-net
 
